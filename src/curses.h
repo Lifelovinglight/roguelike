@@ -72,9 +72,12 @@ typedef enum
   {
     WHITE,
     BLACK,
-    YELLOW,
+    RED,
     GREEN,
-    MAGENTA
+    YELLOW,
+    BLUE,
+    MAGENTA,
+    CYAN
   } colors;
 
 #define TRUE 1
