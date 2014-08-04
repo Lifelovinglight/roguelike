@@ -27,7 +27,10 @@ out_of_bounds(struct xyz point)
 void
 set_terrain(struct xyz point, char c)
 {
-  level[point.x][point.y][point.z] = c;
+  if(!out_of_bounds(point))
+    {
+      level[point.x][point.y][point.z] = c;
+    }
 }
 
 void
@@ -203,7 +206,7 @@ material(struct xyz point)
 void
 transform_terrain(struct xyz point, char x, char y)
 {
-  if(!out_of_bounds(point) && terrain(point) == x)
+  if(terrain(point) == x)
     set_terrain(point,y);
 }
  
