@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <libguile.h>
-#include "curses.h"
+#include "main.h"
 
 int
 one_in(int n)

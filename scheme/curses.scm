@@ -288,11 +288,6 @@
 	     (set-material point steel)
 	     (ladder-shaft-to-surface (up point)))))
 
-(define-syntax thread
-  (syntax-rules ()
-     ((_ body ...)
-      (wrapper body ...))))
-
 (define (generate-cave-level point)
   (ladder-shaft-up 2 (random-walk air 100 point)))
 
@@ -305,5 +300,4 @@
 
 (define (generate-terrain)
   (set! *random-state* (random-state-from-platform))
-  (ladder-shaft-to-surface (generate-cave-levels '(40 12 0) 4))
-  (generate-pyramid concrete 5 '(40 12 10)))
+  (ladder-shaft-to-surface (generate-cave-levels '(40 12 0) 4)))
