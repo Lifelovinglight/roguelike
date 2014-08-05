@@ -1,3 +1,8 @@
+(use-modules (srfi srfi-1)
+	     (srfi srfi-31)  ; Anonymous recursion
+	     (srfi srfi-41)  ; Streams
+	     (srfi srfi-42)) ; Comprehensions
+
 (define (inc n)
   (+ n 1))
 
@@ -195,8 +200,7 @@
   (build point ladder steel))
 
 (define (my-assoc x l)
-  (cond ((null? l)
-	 #f)
+  (cond ((null? l) #f)
 	((eq? x (caar l))
 	 (cadar l))
 	(else (my-assoc x (cdr l)))))
@@ -278,7 +282,7 @@
 	     (ladder-shaft-up (dec height) (up point)))))
 
 (define (ladder-shaft-to-surface point)
-  (if (> (caddr point) 9)
+  (if (> (z point) 9)
       point
       (begin (set-terrain point ladder)
 	     (set-material point steel)
@@ -299,45 +303,7 @@
        (generate-cave-level point)
        (dec height))))
 
-(define (draw-straight-line material terrain direction length point)
-  (if (zero? length)
-      point
-      (begin
-	(set-terrain point terrain)
-	(set-material point material)
-	(draw-straight-line material terrain direction
-			    (dec length) (direction point)))))
-
-(define spiral-power
-  (list (list north west)
-	(list west south)
-	(list south east)
-	(list east north)))
-
-(define (draw-spiral material terrain direction length iterations point)
-  (if (zero? iterations)
-      (list direction point)
-      (let ((p (draw-straight-line material terrain direction length point)))
-	(draw-spiral material terrain
-		     (my-assoc direction spiral-power)
-		     (if (even? iterations)
-			 (inc length)
-			 length)
-		     (dec iterations) p))))	     
-
-(define (draw-pyramid-level material width point)
-  (let ((spiral (draw-spiral material wall west 1 width point)))
-    (draw-spiral material slope
-		 (car spiral)
-		 (dec (dec width)) 4 (cadr spiral))))
-
-(define (generate-pyramid material height point)
-  (if (zero? height)
-      point
-      (begin (draw-pyramid-level material (inc (inc height)) point)
-	     (generate-pyramid material (dec height) (up point)))))
-
 (define (generate-terrain)
   (set! *random-state* (random-state-from-platform))
   (ladder-shaft-to-surface (generate-cave-levels '(40 12 0) 4))
-  (generate-pyramid concrete 3 '(40 12 10)))
+  (generate-pyramid concrete 5 '(40 12 10)))
