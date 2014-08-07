@@ -2,6 +2,7 @@
 #include <ncurses.h>
 #include <libguile.h>
 #include "main.h"
+#include "tree.h"
 
 int
 one_in(int n)
