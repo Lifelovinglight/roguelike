@@ -125,7 +125,6 @@ grow_voxel_tree (int geometry, int material,
   return (branch);
 }
 
-
 /* Create a new voxel trace.  */
 
 voxel_trace*
@@ -167,26 +166,10 @@ bool
 is_in_voxel_trace (voxel_trace* trace, voxel_tree* address)
 {
   if (trace->node == address)
-    {
-      return (true);
-    }
-  else
-    {
-      if (trace->next)
-	return (is_in_voxel_trace (trace->next, address));
-    }
-  return (false);
-}
-
-void
-free_voxel_trace (voxel_trace* trace)
-{
-  if (trace)
-    {
-      printf("Freeing trace.\n");
-      free_voxel_trace (trace->next);
-      free (trace);
-    }
+    return (true);
+  if (!trace->next)
+    return (false);
+  return (is_in_voxel_trace (trace->next, address));
 }
 
 /* Free a single node of a voxel tree.  */
@@ -198,30 +181,56 @@ free_voxel_tree_node (voxel_tree* tree)
   free (tree);
 }
 
+/* Free a voxel trace, freeing the tree nodes along with it.  
+   Building the list first should ensure tail call elimination.  */
+
+void
+free_voxel_trace (voxel_trace* trace)
+{
+  voxel_trace* next_p = NULL;
+  if (trace)
+    {
+      next_p = trace->next;
+      if (trace->node)
+	free_voxel_tree_node (trace->node);
+      free (trace);
+    }
+  else
+    {
+      return;
+    }
+  free_voxel_trace (next_p); /* Writing the function like this is obtuse
+				but it makes the tail call unambiguous.  */
+}
+
+/* Free a voxel tree - inner function.  */
+
 void
 free_voxel_tree_ (voxel_trace* trace, voxel_tree* tree)
 {
   if (tree && !is_in_voxel_trace (trace, tree))
     {
       add_voxel_trace (trace, tree);
-      /* printf("Iterating through branches.\n");  */
-      direction n;
-      for (n = BRANCH_D; n < BRANCH_NW; n++)
+      direction dir;
+      for (dir = BRANCH_D; dir < BRANCH_NW; dir++)
 	{
-	  free_voxel_tree_ (trace, tree->branches[n]);
+	    free_voxel_tree_ (trace, tree->branches[dir]);
 	}
-      free_voxel_tree_node (tree);
     }
 }
+
+/* Free a voxel tree - outer function.  */
 
 void
 free_voxel_tree (voxel_tree* tree)
 {
-  printf("Freeing tree.\n");
   voxel_trace* trace = new_voxel_trace (NULL);
   free_voxel_tree_ (trace, tree);
+  printf("Freeing trace.\n");
   free_voxel_trace (trace);
 }
+
+/* Convert a point and a direction to a neighbouring point in 3d space.  */
 
 point
 branch_to_cube (point p, direction dir)
@@ -364,6 +373,8 @@ branch_to_cube (point p, direction dir)
   return (p);
 }
 
+/* Check if a point is out of bounds for the purposes of array indexing.  */
+
 bool
 out_of_bounds (int height, int width, int depth, point p)
 {
@@ -373,6 +384,8 @@ out_of_bounds (int height, int width, int depth, point p)
     return (true);
   return (false);
 }
+
+/* Create a cubic voxel tree.  */
 
 voxel_tree*
 create_cubic_voxel_area (int height, int width, int depth,
@@ -389,7 +402,6 @@ create_cubic_voxel_area (int height, int width, int depth,
 	{
 	  for (p.z = 0; p.z < depth; p.z++)
 	    {
-	      printf("%d-%d-%d ", p.x, p.y, p.z);
 	      area[p.x][p.y][p.z] =
 		new_voxel_tree(geometry, material);
 	    }
@@ -407,7 +419,6 @@ create_cubic_voxel_area (int height, int width, int depth,
 		  n_p = branch_to_cube(p, dir);
 		  if (!out_of_bounds (height, width, depth, n_p))
 		    {
-		      printf("%d-%d-%d ", n_p.x, n_p.y, n_p.z);
 		      neighbour = area[n_p.x][n_p.y][n_p.z];
 		      this = area[p.x][p.y][p.z];
 		      this->branches[dir] = neighbour;
