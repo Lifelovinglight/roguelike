@@ -1,73 +1,11 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include "tree.h"
 
 /* tree.c - An implementation of a "voxel tree", a graph representing
    a position in a three-dimensional grid with links to all its
    neighbours.  */
-
-/* The branches of a voxel tree.  */
-
-typedef enum
-{
-  BRANCH_D,
-  BRANCH_LN,
-  BRANCH_LNE,
-  BRANCH_LE,
-  BRANCH_LSE,
-  BRANCH_LS,
-  BRANCH_LSW,
-  BRANCH_LW,
-  BRANCH_LNW,
-  BRANCH_N,
-  BRANCH_NE,
-  BRANCH_E,
-  BRANCH_SE,
-  BRANCH_U,
-  BRANCH_US,
-  BRANCH_USW,
-  BRANCH_UW,
-  BRANCH_UNW,
-  BRANCH_UN,
-  BRANCH_UNE,
-  BRANCH_UE,
-  BRANCH_USE,
-  BRANCH_S,
-  BRANCH_SW,
-  BRANCH_W,
-  BRANCH_NW
-} direction;
-
-/* A voxel tree.  */
-
-typedef struct voxel_tree voxel_tree;
-
-struct voxel_tree
-{
-  int geometry;
-  int material;
-  voxel_tree** branches;
-};
-
-/* A linked list of voxel tree pointers.  
-   Used to avoid problems with cyclic graphs when freeing a voxel tree.  */
-
-typedef struct voxel_trace voxel_trace;
-
-struct voxel_trace
-{
-  voxel_tree* node;
-  voxel_trace* next;
-};
-
-/* A point in 3d space.  */
-
-typedef struct
-{
-  int x;
-  int y;
-  int z;
-} point;
 
 /* Allocate a voxel tree  */
 
