@@ -48,3 +48,6 @@ enum voxel_tree_branches;
 int mirror_tree(int direction);
 
 struct voxel_tree* free_voxel_tree (struct voxel_tree* tree);
+
+struct voxel_tree* create_cubic_voxel_area (int height, int width, int depth,
+					    int geometry, int material);
