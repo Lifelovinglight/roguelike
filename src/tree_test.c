@@ -56,6 +56,6 @@ main (int argc, char *argv[])
   node->branches[BRANCH_U] = tree;
   free_voxel_tree (tree);
   tree = create_cubic_voxel_area (3, 3, 3, 1, 1);
-  free_voxel_tree (tree);
+  free_voxel_tree (tree); 
   return (0);
 }

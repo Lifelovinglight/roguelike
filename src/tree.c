@@ -79,11 +79,11 @@ new_voxel_tree (int geometry, int material)
   voxel_tree *tree = malloc (sizeof (voxel_tree));
   if (tree)
     {
-      tree->branches = malloc (sizeof (voxel_tree *) * (BRANCH_NW + 1));
+      tree->branches = malloc (sizeof (voxel_tree*) * (BRANCH_NW + 1));
       if (tree->branches)
 	{
 	  direction dir;
-	  for (dir = BRANCH_D; dir < (BRANCH_NW - 1); ++dir)
+	  for (dir = BRANCH_D; dir < BRANCH_NW; dir++)
 	    {
 	      tree->branches[dir] = NULL;
 	    }
@@ -203,13 +203,13 @@ free_voxel_tree_ (voxel_trace* trace, voxel_tree* tree)
 {
   if (tree && !is_in_voxel_trace (trace, tree))
     {
-      printf("Iterating through branches.\n");
+      add_voxel_trace (trace, tree);
+      /* printf("Iterating through branches.\n");  */
       direction n;
-      for (n = BRANCH_D; n < (BRANCH_NW - 1); ++n)
+      for (n = BRANCH_D; n < BRANCH_NW; n++)
 	{
 	  free_voxel_tree_ (trace, tree->branches[n]);
 	}
-      add_voxel_trace (trace, tree);
       free_voxel_tree_node (tree);
     }
 }
@@ -367,9 +367,9 @@ branch_to_cube (point p, direction dir)
 bool
 out_of_bounds (int height, int width, int depth, point p)
 {
-  if (0 > p.x && p.x > width &&
-      0 > p.y && p.y > height &&
-      0 > p.z && p.z > depth)
+  if (0 > p.x || p.x >= width ||
+      0 > p.y || p.y >= height ||
+      0 > p.z || p.z >= depth)
     return (true);
   return (false);
 }
@@ -383,28 +383,31 @@ create_cubic_voxel_area (int height, int width, int depth,
   voxel_tree* neighbour;
   point p, n_p;
   direction dir;
-  for (p.x = 0; p.x < (width - 1); ++p.x)
+  for (p.x = 0; p.x < width; p.x++)
     {
-      for (p.y = 0; p.y < (height - 1); ++p.y)
+      for (p.y = 0; p.y < height; p.y++)
 	{
-	  for (p.z = 0; p.z < (depth - 1); ++p.z)
+	  for (p.z = 0; p.z < depth; p.z++)
 	    {
+	      printf("%d-%d-%d ", p.x, p.y, p.z);
 	      area[p.x][p.y][p.z] =
 		new_voxel_tree(geometry, material);
 	    }
 	}
     }
-  for (p.x = 0; p.x < (width - 1); ++p.x)
+  printf("\n");
+  for (p.x = 0; p.x < width; p.x++)
     {
-      for (p.y = 0; p.y < (height - 1); ++p.y)
+      for (p.y = 0; p.y < height; p.y++)
 	{
-	  for (p.z = 0; p.z < (depth - 1); ++p.z)
+	  for (p.z = 0; p.z < depth; p.z++)
 	    {
-	      for (dir = BRANCH_D; dir < (BRANCH_NW - 1); ++dir)
+	      for (dir = BRANCH_D; dir < BRANCH_NW; dir++)
 		{
 		  n_p = branch_to_cube(p, dir);
 		  if (!out_of_bounds (height, width, depth, n_p))
 		    {
+		      printf("%d-%d-%d ", n_p.x, n_p.y, n_p.z);
 		      neighbour = area[n_p.x][n_p.y][n_p.z];
 		      this = area[p.x][p.y][p.z];
 		      this->branches[dir] = neighbour;
