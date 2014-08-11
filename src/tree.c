@@ -2,8 +2,6 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <stdio.h>
-
 /* tree.c - An implementation of a "voxel tree", a graph representing
    a position in a three-dimensional grid with links to all its
    neighbours.  */
@@ -226,7 +224,6 @@ free_voxel_tree (voxel_tree* tree)
 {
   voxel_trace* trace = new_voxel_trace (NULL);
   free_voxel_tree_ (trace, tree);
-  printf("Freeing trace.\n");
   free_voxel_trace (trace);
 }
 
@@ -407,7 +404,6 @@ create_cubic_voxel_area (int height, int width, int depth,
 	    }
 	}
     }
-  printf("\n");
   for (p.x = 0; p.x < width; p.x++)
     {
       for (p.y = 0; p.y < height; p.y++)
