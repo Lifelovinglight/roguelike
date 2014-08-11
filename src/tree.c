@@ -179,7 +179,7 @@ free_voxel_tree_node (voxel_tree* tree)
   free (tree);
 }
 
-/* Free a voxel trace, freeing the tree nodes along with it.  
+/* Free a voxel trace.  
    Building the list first should ensure tail call elimination.  */
 
 void
@@ -189,8 +189,6 @@ free_voxel_trace (voxel_trace* trace)
   if (trace)
     {
       next_p = trace->next;
-      if (trace->node)
-	free_voxel_tree_node (trace->node);
       free (trace);
     }
   else
@@ -214,6 +212,7 @@ free_voxel_tree_ (voxel_trace* trace, voxel_tree* tree)
 	{
 	    free_voxel_tree_ (trace, tree->branches[dir]);
 	}
+      free_voxel_tree_node (tree);
     }
 }
 

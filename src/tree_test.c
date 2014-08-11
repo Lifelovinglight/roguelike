@@ -55,8 +55,8 @@ main (int argc, char *argv[])
   printf ("\n\n");
   node->branches[BRANCH_U] = tree;
   free_voxel_tree (tree);
-  printf("Creating cubic tree.\n");
-  tree = create_cubic_voxel_area (80, 24, 20, 1, 1);
+  printf("Creating a 15x15x15 cubic tree.\n");
+  tree = create_cubic_voxel_area (15, 15, 15, 1, 1);
   printf("Freeing cubic tree.\n");
   free_voxel_tree (tree); 
   return (0);
