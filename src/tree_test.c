@@ -38,12 +38,13 @@ int rsd ()
 int
 main (int argc, char *argv[])
 {
-  struct voxel_tree* tree = new_voxel_tree (rsd (), rsd ());
-  struct voxel_tree* node = tree;
+  set_current_voxel_pool(new_voxel_pool ());
+  voxel_tree* tree = new_voxel_tree_from_pool (rsd (), rsd ());
   int n;
+  voxel_tree* node = NULL;
   for (n = 0; n < 2; ++n)
     {
-      node = grow_voxel_tree (rsd (), rsd (), random_tree_branch (), node);
+      node = grow_voxel_tree_from_pool (rsd (), rsd (), random_tree_branch (), node);
     }
   printf ("\n\n");
   struct voxel_tree* t;
@@ -54,10 +55,10 @@ main (int argc, char *argv[])
     }
   printf ("\n\n");
   node->branches[BRANCH_U] = tree;
-  free_voxel_tree (tree);
+  free_voxel_pool (get_current_voxel_pool ());
   printf("Creating a 15x15x15 cubic tree.\n");
   tree = create_cubic_voxel_area (15, 15, 15, 1, 1);
   printf("Freeing cubic tree.\n");
-  free_voxel_tree (tree); 
+  free_voxel_tree (tree);
   return (0);
 }

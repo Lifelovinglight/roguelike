@@ -3,9 +3,168 @@
 #include <stdbool.h>
 #include "tree.h"
 
+#include <stdio.h>
+
 /* tree.c - An implementation of a "voxel tree", a graph representing
    a position in a three-dimensional grid with links to all its
    neighbours.  */
+
+/* The beginning and end of the linked list of voxel tree pools.  */
+
+static int current_chunk_size = 256;
+
+static voxel_pool* voxel_pool_source = NULL;
+
+static voxel_pool* current_voxel_pool = NULL;
+
+voxel_pool*
+get_current_voxel_pool ()
+{
+  return (current_voxel_pool);
+}
+
+void
+set_current_voxel_pool (voxel_pool* pool)
+{
+  current_voxel_pool = pool;
+}
+
+static voxel_pool* voxel_pool_end = NULL;
+
+const int voxel_tree_byte_size = sizeof (voxel_tree) +
+  (sizeof (voxel_tree*) * (BRANCH_NW + 1));
+
+/* Allocate a new voxel pool.  */
+
+voxel_pool*
+new_voxel_pool ()
+{
+  printf("Allocating pool... ");
+  voxel_pool* new_pool = (voxel_pool*) (malloc (sizeof (voxel_pool)));
+  if (new_pool)
+    {
+      new_pool->begin =
+	(voxel_tree*) malloc (voxel_tree_byte_size * current_chunk_size);
+      if (new_pool->begin)
+	{
+	  new_pool->end = new_pool->begin +
+	    (voxel_tree_byte_size * current_chunk_size);
+	  new_pool->next = NULL;
+	  if (voxel_pool_source)
+	    {
+	      new_pool->index = voxel_pool_end->index + 1;
+	      voxel_pool_end->next = new_pool;
+	      new_pool->prev = voxel_pool_end;
+	      voxel_pool_end = new_pool;
+	    }
+	  else
+	    {
+	      new_pool->prev = NULL;
+	      new_pool->index = 0;
+	      voxel_pool_source = new_pool;
+	      voxel_pool_end = voxel_pool_source;
+	    }
+	  printf("[OK]\n");
+	  return (voxel_pool_end);
+	}
+      else
+	{
+	  free (new_pool);
+	}
+    }
+  return (NULL);
+}
+
+/* Get a voxel pool from its index number, inner function.  */
+
+voxel_pool*
+get_pool_from_index_ (int index, voxel_pool* this)
+{
+  if (this)
+    {
+      if (index == this->index)
+	{
+	  return (this);
+	}
+      else
+	{
+	  return (get_pool_from_index_ (index, this->next));
+	}
+    }
+  return (NULL);
+}
+
+/* Get a voxel pool from its index number, outer function.  */
+
+voxel_pool*
+get_pool_from_index (int index)
+{
+  if (voxel_pool_source)
+    {
+      return (get_pool_from_index_ (index, voxel_pool_source));
+    }
+  return (NULL);
+}
+
+/* Free a voxel pool.  
+   We have three states we need to take into account: no voxel pool exists,
+   one voxel pool exists and n voxel pools exist.  */
+
+void
+free_voxel_pool (voxel_pool* pool)
+{
+  if (voxel_pool_source)
+    {
+      if (voxel_pool_source == voxel_pool_end)
+	{
+	  /* One voxel pool exists.  */
+	  free (pool);
+	  voxel_pool_source = NULL;
+	  set_current_voxel_pool (NULL);
+	  voxel_pool_end = NULL;
+	}
+      else
+	{
+	  /* N voxel pools exist.  */
+	  pool->prev->next = pool->next;
+	  pool->next->prev = pool->prev;
+	  if (get_current_voxel_pool () == pool)
+	    set_current_voxel_pool (NULL);
+	  free (pool);
+	}
+    }
+}
+
+voxel_tree*
+new_voxel_tree_from_pool (int geometry, int material)
+{
+  if (current_voxel_pool && current_voxel_pool->end !=
+      (current_voxel_pool->current + voxel_tree_byte_size))
+    {
+      current_voxel_pool->current += voxel_tree_byte_size;
+    }
+  else
+    {
+      voxel_pool* new_pool = new_voxel_pool();
+      if (new_pool)
+	{
+	  current_voxel_pool = new_pool;
+	}
+      else
+	{
+	  return (NULL);
+	}
+    }
+  voxel_tree* new_tree = current_voxel_pool->current;
+  new_tree->geometry = geometry;
+  new_tree->material = material;
+  direction dir;
+  for (dir = BRANCH_D; dir < BRANCH_NW; dir++)
+    {
+      new_tree->branches[dir] = NULL;
+    }
+  return (new_tree);
+}
 
 /* Allocate a voxel tree  */
 
@@ -58,6 +217,17 @@ grow_voxel_tree (int geometry, int material,
   branch->geometry = geometry;
   branch->material = material;
   /* branch->branches[mirror_tree (dir)] = tree;  */
+  return (branch);
+}
+
+voxel_tree*
+grow_voxel_tree_from_pool (int geometry, int material,
+			   direction dir, voxel_tree* tree)
+{
+  tree->branches[dir] = new_voxel_tree_from_pool (geometry, material);
+  voxel_tree *branch = tree->branches[dir];
+  branch->geometry = geometry;
+  branch->material = material;
   return (branch);
 }
 

@@ -52,6 +52,20 @@ struct voxel_trace
   voxel_trace* next;
 };
 
+/* A memory pool for voxel trees.  */
+
+typedef struct voxel_pool voxel_pool;
+
+struct voxel_pool
+{
+  voxel_tree* begin;
+  voxel_tree* current;
+  voxel_tree* end;
+  int index;
+  voxel_pool* prev;
+  voxel_pool* next;
+};
+
 /* A point in 3d space.  */
 
 typedef struct
@@ -77,3 +91,25 @@ free_voxel_tree (voxel_tree* tree);
 voxel_tree*
 create_cubic_voxel_area (int height, int width, int depth,
 			 int geometry, int material);
+
+voxel_pool*
+new_voxel_pool ();
+
+voxel_tree*
+grow_voxel_tree_from_pool (int geometry, int material,
+			   direction dir, voxel_tree* tree);
+
+voxel_pool*
+get_pool_from_index (int index);
+
+void
+free_voxel_pool (voxel_pool* pool);
+
+voxel_tree*
+new_voxel_tree_from_pool (int geometry, int material);
+
+voxel_pool*
+get_current_voxel_pool ();
+
+void
+set_current_voxel_pool (voxel_pool* pool);
